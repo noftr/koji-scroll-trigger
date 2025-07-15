@@ -10,11 +10,11 @@ scrollTrigger="year-1975"
 
 ```jsx
 // This is a universal function that can be called multiple times
+// This is a universal function that can be called multiple times
 class ScrollTrigger {
   constructor(triggerEl, options) {
     this.TRIGGERS_ELEMENTS = document.querySelectorAll(triggerEl);
     this.options = options;
-
     this.state = {
       triggers: [
         {
@@ -29,25 +29,20 @@ class ScrollTrigger {
       windowHeight: 0,
       currentPosition: 0,
     };
-
     this.startTrigger();
   }
-
   startTrigger() {
     this.prepareStatus();
     this.recalculatePage();
     this.recalculateScroll();
-
     this.dispatcher();
   }
-
   prepareStatus() {
     this.state.triggerRunStatus = [];
     this.TRIGGERS_ELEMENTS.forEach(() => {
       this.state.triggerRunStatus.push(false);
     });
   }
-
   dispatcher() {
     const optimizedScrollHandler = this.throttle(
       this.recalculateScroll.bind(this),
@@ -57,24 +52,19 @@ class ScrollTrigger {
       this.recalculatePage.bind(this),
       200
     );
-
     window.addEventListener("scroll", optimizedScrollHandler);
     window.addEventListener("resize", optimizedResizeHandler);
-
     this.loopRecalculatePage(optimizedResizeHandler);
   }
-
   loopRecalculatePage(handler) {
     setTimeout(() => {
       handler();
       this.loopRecalculatePage(handler);
     }, 400);
   }
-
   recalculateScroll() {
     this.state.currentPosition =
       window.pageYOffset || document.documentElement.scrollTop;
-
     this.state.triggers.forEach((trigger, index) => {
       if (
         this.state.currentPosition >
@@ -82,42 +72,34 @@ class ScrollTrigger {
         this.state.currentPosition < trigger.documentTopOffset + trigger.height
       ) {
         // into view
-
         if (this.state.triggerRunStatus[index] === false) {
           if (this.options.intoView !== undefined) {
-            this.options.intoView();
+            this.options.intoView(trigger);
           }
-
           this.state.triggerRunStatus[index] = true;
           document.body.setAttribute(trigger.name, "");
         }
       } else {
         // out of view
-
         if (this.state.triggerRunStatus[index] === true) {
           if (this.options.outOfView !== undefined) {
-            this.options.outOfView();
+            this.options.outOfView(trigger);
           }
-
           this.state.triggerRunStatus[index] = false;
           document.body.setAttribute(trigger.name, "");
         }
-
         document.body.removeAttribute(trigger.name);
       }
     });
   }
-
   recalculatePage() {
     this.state.windowHeight = window.innerHeight;
     this.state.currentPosition =
       window.pageYOffset || document.documentElement.scrollTop;
-
     this.state.triggers = [];
     this.TRIGGERS_ELEMENTS.forEach((triggerEl) => {
       const triggerRect = triggerEl.getBoundingClientRect();
       const triggerName = triggerEl.getAttribute("scrollTrigger");
-
       this.state.triggers.push({
         element: triggerEl,
         name: triggerName,
@@ -127,10 +109,8 @@ class ScrollTrigger {
         documentTopOffset: this.state.currentPosition + triggerRect.top,
       });
     });
-
     this.state.pageHeight = document.body.offsetHeight;
   }
-
   throttle(callee, timeout) {
     let timer = null;
     return function perform(...args) {
@@ -144,13 +124,14 @@ class ScrollTrigger {
   }
 }
 
-const intoView = () => {
+const intoView = (trigger) => {
   // you can add your code here
-  console.log("into view");
+  console.log(["into view", trigger.name]);
 };
-const outOfView = () => {
+
+const outOfView = (trigger) => {
   // you can add your code here
-  console.log("out of view");
+  console.log(["out of view", trigger.name]);
 };
 
 new ScrollTrigger("[scrollTrigger]", {
